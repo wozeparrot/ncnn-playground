@@ -1,0 +1,11 @@
+--- a/src/ncnn.pc.in
++++ b/src/ncnn.pc.in
+@@ -1,6 +1,6 @@
+ prefix=${pcfiledir}/../..
+-librarydir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+-includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
++librarydir=@CMAKE_INSTALL_FULL_LIBDIR@
++includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+ 
+ Name: @CMAKE_PROJECT_NAME@
+ Description: high-performance neural network inference framework optimized for the mobile platform

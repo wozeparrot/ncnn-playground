@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
 
-    cv::Mat rotated = frame.clone();
+    cv::Mat rotated;
     cv::rotate(frame, rotated, cv::ROTATE_180);
 
     cv::Mat resized;

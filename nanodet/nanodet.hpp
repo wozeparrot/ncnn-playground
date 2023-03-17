@@ -11,17 +11,18 @@ public:
   NanoDet(const char *param, const char *bin);
   ~NanoDet();
 
-  int input_size[2] = {416, 416};
-  int num_class = 80;
+  constexpr static int input_size[2] = {160, 160};
+  int num_class = 1;
   int reg_max = 7;
   std::vector<int> strides = {8, 16, 32, 64};
 
   std::vector<BoundBox> detect(const cv::Mat &image, float threshold,
                                float nms);
 
-  void draw_debug_bboxes(const cv::Mat &image, const cv::Mat &out,
+  void draw_debug_bboxes(const cv::Mat &out,
                          const std::vector<BoundBox> &bboxes);
 
+  const static int selected_label = 0;
   constexpr static const char *labels[] = {
       "person",        "bicycle",      "car",
       "moto rycle",    "airplane",     "bus",
@@ -79,8 +80,7 @@ private:
 
   void preprocess(const cv::Mat &image, ncnn::Mat &in);
   void decode_infer(ncnn::Mat &feats, std::vector<CenterPrior> &center_priors,
-                    float threshold,
-                    std::vector<std::vector<BoundBox>> &results);
+                    float threshold, std::vector<BoundBox> &results);
   BoundBox disPred2Bbox(const float *&dfl_det, int label, float score, int x,
                         int y, int stride);
   static void nms(std::vector<BoundBox> &boxes, float threshold);

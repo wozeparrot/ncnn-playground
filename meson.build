@@ -7,7 +7,11 @@ ncnn = dependency('ncnn')
 opencv = dependency('opencv4')
 cpp_mjpeg_streamer = dependency('nadjieb_mjpeg_streamer')
 
-executable('ncnn-playground',
-           ['main.cpp', 'utils.cpp', 'nanodet/nanodet.cpp'],
-            dependencies : [ncnn, opencv, cpp_mjpeg_streamer],
-           install : true)
+executable('ncnn-playground', [
+  'main.cpp',
+  'utils.cpp',
+  'nanodet/nanodet.cpp'
+  ],
+  dependencies : [ncnn, opencv, cpp_mjpeg_streamer],
+  install : true
+)

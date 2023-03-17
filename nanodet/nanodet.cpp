@@ -25,6 +25,11 @@ generate_grid_center_priors(const int input_height, const int input_width,
 NanoDet::NanoDet(const char *param, const char *bin) {
   this->net = new ncnn::Net();
 
+  this->net->opt.use_fp16_arithmetic = true;
+  this->net->opt.use_fp16_packed = true;
+  this->net->opt.use_fp16_storage = true;
+  this->net->opt.lightmode = true;
+
   this->net->load_param(param);
   this->net->load_model(bin);
 }
@@ -57,17 +62,14 @@ std::vector<BoundBox> NanoDet::detect(const cv::Mat &image, float threshold,
   generate_grid_center_priors(this->input_size[0], this->input_size[1],
                               this->strides, center_priors);
 
-  std::vector<std::vector<BoundBox>> results;
-  results.resize(this->num_class);
+  std::vector<BoundBox> results;
   this->decode_infer(out, center_priors, threshold, results);
 
   std::vector<BoundBox> dets;
-  for (int i = 0; i < (int)results.size(); i++) {
-    this->nms(results[i], nms);
+  this->nms(results, nms);
 
-    for (auto box : results[i]) {
-      dets.push_back(box);
-    }
+  for (auto box : results) {
+    dets.push_back(box);
   }
 
   return dets;
@@ -75,8 +77,7 @@ std::vector<BoundBox> NanoDet::detect(const cv::Mat &image, float threshold,
 
 void NanoDet::decode_infer(ncnn::Mat &feats,
                            std::vector<CenterPrior> &center_priors,
-                           float threshold,
-                           std::vector<std::vector<BoundBox>> &results) {
+                           float threshold, std::vector<BoundBox> &results) {
   const int num_points = center_priors.size();
 
   for (int idx = 0; idx < num_points; idx++) {
@@ -85,18 +86,11 @@ void NanoDet::decode_infer(ncnn::Mat &feats,
     const int stride = center_priors[idx].stride;
 
     const float *scores = feats.row(idx);
-    float score = 0;
-    int cur_label = 0;
-    for (int label = 0; label < this->num_class; label++) {
-      if (scores[label] > score) {
-        score = scores[label];
-        cur_label = label;
-      }
-    }
+    float score = scores[NanoDet::selected_label];
     if (score > threshold) {
       const float *bbox_pred = feats.row(idx) + this->num_class;
-      results[cur_label].push_back(
-          this->disPred2Bbox(bbox_pred, cur_label, score, ct_x, ct_y, stride));
+      results.push_back(this->disPred2Bbox(bbox_pred, NanoDet::selected_label,
+                                           score, ct_x, ct_y, stride));
     }
   }
 }
@@ -155,7 +149,7 @@ void NanoDet::nms(std::vector<BoundBox> &boxes, float threshold) {
   }
 }
 
-void NanoDet::draw_debug_bboxes(const cv::Mat &image, const cv::Mat &out,
+void NanoDet::draw_debug_bboxes(const cv::Mat &out,
                                 const std::vector<BoundBox> &bboxes) {
   for (size_t i = 0; i < bboxes.size(); i++) {
     const BoundBox &bbox = bboxes[i];
@@ -179,8 +173,8 @@ void NanoDet::draw_debug_bboxes(const cv::Mat &image, const cv::Mat &out,
     int y = (bbox.y1) - label_size.height - baseLine;
     if (y < 0)
       y = 0;
-    if (x + label_size.width > image.cols)
-      x = image.cols - label_size.width;
+    if (x + label_size.width > out.cols)
+      x = out.cols - label_size.width;
 
     cv::rectangle(
         out,

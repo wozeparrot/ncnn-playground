@@ -64,10 +64,9 @@ std::vector<BoundBox> NanoDet::detect(const cv::Mat &image, float threshold,
 
   std::vector<BoundBox> results;
   this->decode_infer(out, center_priors, threshold, results);
-
-  std::vector<BoundBox> dets;
   this->nms(results, nms);
 
+  std::vector<BoundBox> dets;
   for (auto box : results) {
     dets.push_back(box);
   }

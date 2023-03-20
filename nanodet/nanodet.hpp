@@ -11,8 +11,8 @@ public:
   NanoDet(const char *param, const char *bin);
   ~NanoDet();
 
-  constexpr static int input_size[2] = {160, 160};
-  int num_class = 1;
+  constexpr static int input_size[2] = {192, 192};
+  int num_class = 80;
   int reg_max = 7;
   std::vector<int> strides = {8, 16, 32, 64};
 
@@ -25,7 +25,7 @@ public:
   const static int selected_label = 0;
   constexpr static const char *labels[] = {
       "person",        "bicycle",      "car",
-      "moto rycle",    "airplane",     "bus",
+      "motorcycle",    "airplane",     "bus",
       "train",         "truck",        "boat",
       "traffic light", "fire hydrant", "stop sign",
       "parking meter", "bench",        "bird",

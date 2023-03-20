@@ -1,3 +1,6 @@
+#include <iomanip>
+#include <sstream>
+
 #include <nadjieb/mjpeg_streamer.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -5,6 +8,7 @@
 
 #include "nanodet/nanodet.hpp"
 #include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
 #include "utils.hpp"
 
 const int WIDTH = NanoDet::input_size[0];
@@ -34,11 +38,10 @@ int main(int argc, char **argv) {
 
   while (streamer.isRunning()) {
     // calculate fps
-    // static int64_t last = cv::getTickCount();
-    // int64_t now = cv::getTickCount();
-    // double fps = cv::getTickFrequency() / (now - last);
-    // last = now;
-    // std::cout << "FPS: " << fps << std::endl;
+    static int64_t last = cv::getTickCount();
+    int64_t now = cv::getTickCount();
+    double fps = cv::getTickFrequency() / (now - last);
+    last = now;
 
     cv::Mat frame;
     cap >> frame;
@@ -47,18 +50,30 @@ int main(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
 
-    cv::Mat rotated;
+    // rotate
+    cv::Mat rotated = frame.clone();
     cv::rotate(frame, rotated, cv::ROTATE_180);
 
+    // resize
     cv::Mat resized;
     resize_uniform(rotated, resized, cv::Size(WIDTH, HEIGHT));
 
-    auto results = detector.detect(resized, 0.5, 0.4);
+    // detect
+    auto results = detector.detect(resized, 0.5, 0.6);
 
+    // draw bbox
     detector.draw_debug_bboxes(resized, results);
 
+    // write fps
+    // convert fps to string limited to 2 decimal places
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(2) << fps;
+    std::string fps_str = ss.str();
+    cv::putText(resized, fps_str, cv::Point(0, 14), cv::FONT_HERSHEY_SIMPLEX,
+                0.55, cv::Scalar(255, 0, 255), 2);
+
     std::vector<uchar> buf_final;
-    cv::imencode(".jpg", resized, buf_final, {cv::IMWRITE_JPEG_QUALITY, 45});
+    cv::imencode(".jpg", resized, buf_final, {cv::IMWRITE_JPEG_QUALITY, 90});
     streamer.publish("/frame", std::string(buf_final.begin(), buf_final.end()));
   }
 

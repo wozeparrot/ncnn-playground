@@ -85,11 +85,13 @@ void NanoDet::decode_infer(ncnn::Mat &feats,
     const int stride = center_priors[idx].stride;
 
     const float *scores = feats.row(idx);
-    float score = scores[NanoDet::selected_label];
-    if (score > threshold) {
-      const float *bbox_pred = feats.row(idx) + this->num_class;
-      results.push_back(this->disPred2Bbox(bbox_pred, NanoDet::selected_label,
-                                           score, ct_x, ct_y, stride));
+    for (int selected_label : NanoDet::selected_labels) {
+      float score = scores[selected_label];
+      if (score > threshold) {
+        const float *bbox_pred = feats.row(idx) + this->num_class;
+        results.push_back(this->disPred2Bbox(bbox_pred, selected_label, score,
+                                             ct_x, ct_y, stride));
+      }
     }
   }
 }

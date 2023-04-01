@@ -11,7 +11,7 @@ public:
   NanoDet(const char *param, const char *bin);
   ~NanoDet();
 
-  constexpr static int input_size[2] = {192, 192};
+  constexpr static int input_size[2] = {128, 128};
   int num_class = 80;
   int reg_max = 7;
   std::vector<int> strides = {8, 16, 32, 64};
@@ -22,7 +22,7 @@ public:
   void draw_debug_bboxes(const cv::Mat &out,
                          const std::vector<BoundBox> &bboxes);
 
-  const static int selected_label = 0;
+  constexpr static int selected_labels[] = {0, 56};
   constexpr static const char *labels[] = {
       "person",        "bicycle",      "car",
       "motorcycle",    "airplane",     "bus",

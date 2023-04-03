@@ -11,7 +11,7 @@ public:
   NanoDet(const char *param, const char *bin);
   ~NanoDet();
 
-  constexpr static int input_size[2] = {128, 128};
+  constexpr static int input_size[2] = {160, 160};
   int num_class = 80;
   int reg_max = 7;
   std::vector<int> strides = {8, 16, 32, 64};
